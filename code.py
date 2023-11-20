@@ -39,32 +39,17 @@ rf4.value = True
 time.sleep(0.25)
 rf4.value = False
 
-
-RADIO_FREQ_MHZ = config.RADIO_FREQ_MHZ
-CS = digitalio.DigitalInOut(board.GP21)
-RESET = digitalio.DigitalInOut(board.GP20)
+# Lora Stuff
+RADIO_FREQ_MHZ = 868.775
+CS = DigitalInOut(board.GP21)
+RESET = DigitalInOut(board.GP20)
 spi = busio.SPI(board.GP18, MOSI=board.GP19, MISO=board.GP16)
-
-# Initialze RFM radio with a more conservative baudrate
-rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ, baudrate=1000000)
-
-# You can however adjust the transmit power (in dB).  The default is 13 dB but
-# high power radios like the RFM95 can go up to 23 dB:
-rfm9x.tx_power = config.TX_POWER
-rfm9x.signal_bandwidth = 62500
-rfm9x.coding_rate = 6
-rfm9x.spreading_factor = 8
-rfm9x.enable_crc = True
+rfm9x = adafruit_rfm9x.RFM9x(spi, CS, RESET, RADIO_FREQ_MHZ, baudrate=1000000, agc=False,crc=True)
+rfm9x.tx_power = 5
 
 # Wait to receive packets.
 print("Waiting for packets...")
 # We need to retreive count from file when starting if > ?? we do a rollover
-file = open("remotecounter", "r")
-remotecount = int(file.read())
-file.close()
-file = open("localcounter", "r")
-count = int(file.read())
-file.close()
 while True:
     packet = rfm9x.receive(timeout=0.5)
     if packet is not None:
